@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block header %}
+<script type="text/javascript">
+    $(document).ready(function() {
+        refreshTable()
+    });
+
+    function refreshTable() {
+        console.log("refreshing...")
+        $("#table-content").load("http://127.0.0.1:5000/refresh", function() {
+            setTimeout(refreshTable, 1000)
+            console.log("refreshed")
+        })
+    }
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="shadow-lg table-responsive">
+    <table class="table table-dark table-striped table-hover rounded-bottom">
+        <thead id="table-header">
+            <tr>
+                <th>SKU</th>
+                <th>Product</th>
+                <th>ATC URL</th>
+                <th>Product URL</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody id="table-content">
+            {% for alert in alerts %}
+                <tr>
+                    <td>{{ alert['SKU']|e }}</td>
+                    <td>{{ alert['product']|e }}</td>
+                    <td><a target=_blank href="{{ alert['atc_url']|e }}" class="link-success">LINK</a></td>
+                    <td><a target=_blank href="{{ alert['product_url']|e }}" class="link-success">LINK</a></td>
+                    <td>{{ alert['created']|e }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+
+
