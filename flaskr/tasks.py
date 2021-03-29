@@ -1,7 +1,8 @@
-from flaskr import celery
+from flaskr import celery, db
+from .models import Alert
 from celery import chain
+from datetime import datetime
 from .GPUWU_server import fetchData, fetchDataMulti
-from .db import get_db
 
 
 @celery.on_after_configure.connect
@@ -18,21 +19,15 @@ def update_stock():
 @celery.task(name='fetch_stock_info')
 def fetch_stock_info():
     res = fetchDataMulti(
-        'https://www.bestbuy.com/site/computer-cards-components/video-graphics-cards/abcat0507002.c?cp=3&id=abcat0507002&qp=gpusv_facet%3DGraphics%20Processing%20Unit%20(GPU)~NVIDIA%20GeForce%20RTX%203060%5Egpusv_facet%3DGraphics%20Processing%20Unit%20(GPU)~NVIDIA%20GeForce%20RTX%203060%20Ti%5Egpusv_facet%3DGraphics%20Processing%20Unit%20(GPU)~NVIDIA%20GeForce%20RTX%203070%5Egpusv_facet%3DGraphics%20Processing%20Unit%20(GPU)~NVIDIA%20GeForce%20RTX%203080%5Egpusv_facet%3DGraphics%20Processing%20Unit%20(GPU)~NVIDIA%20GeForce%20RTX%203090')
+        'https://www.bestbuy.com/site/computer-cards-components/computer-pc-processors/abcat0507010.c?id=abcat0507010')
     return res
 
 
 @celery.task(name='store_stock_info')
 def store_stock_info(stock):
-    db = get_db()
-
     for item in stock:
-        db.execute(
-            'INSERT INTO alerts (sku, product, atc_url, product_url)'
-            ' VALUES (?, ?, ?, ?);',
-            (item['sku'], item['product'],
-             item['atc_url'], item['product_url'])
-        )
-        db.commit()
+        alert = Alert(sku=item['sku'], product=item['product'], atc_url=item['atc_url'], product_url=item['product_url'])
+        db.session.add(alert)
+        db.session.commit()
 
     print("Successfully stored stock info")

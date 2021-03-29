@@ -31,11 +31,11 @@
         <tbody id="table-content">
             {% for alert in alerts %}
                 <tr>
-                    <td>{{ alert['SKU']|e }}</td>
-                    <td>{{ alert['product']|e }}</td>
-                    <td><a target=_blank href="{{ alert['atc_url']|e }}" class="link-success">LINK</a></td>
-                    <td><a target=_blank href="{{ alert['product_url']|e }}" class="link-success">LINK</a></td>
-                    <td>{{ alert['created']|e }}</td>
+                    <td>{{ alert.sku|e }}</td>
+                    <td>{{ alert.product|e }}</td>
+                    <td><a target=_blank href="{{ alert.atc_url|e }}" class="link-success">LINK</a></td>
+                    <td><a target=_blank href="{{ alert.product_url|e }}" class="link-success">LINK</a></td>
+                    <td>{{ alert.created|e }}</td>
                 </tr>
             {% endfor %}
         </tbody>

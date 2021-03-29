@@ -1,8 +1,10 @@
 from flask import Blueprint, request
 import os
-from .index import get_alerts
 from .tasks import fetch_stock_info
-from .db import get_db
+from .models import Alert
+from flaskr import db
+
+
 bp = Blueprint("all", __name__)
 
 
@@ -10,7 +12,6 @@ bp = Blueprint("all", __name__)
 @bp.route('/post', methods=['POST'])
 def post():
     content = request.get_json()
-    db = get_db()
     error = None
 
     if not request.is_json:
@@ -21,12 +22,9 @@ def post():
     if error:
         abort(Response(error))
 
-    db.execute(
-        'INSERT INTO alerts (sku, product, atc_url, product_url)'
-        ' VALUES (?, ?, ?, ?);',
-        (content['sku'], content['product'],
-         content['atc_url'], content['product_url'])
-    )
+
+    alert = Alert(sku=content['sku'], product=content['product'], atc_url=content['atc_url'], product_url=content['product_url'])
+    db.session.add(alert)
     db.commit()
 
     return 'Nice one'
@@ -35,7 +33,7 @@ def post():
 # Returns just the data portion of the table so this can be used as a hot refresh
 @bp.route('/refresh')
 def refresh():
-    alerts = get_alerts()
+    alerts = Alert.query.order_by(Alert.id.desc()).limit(10).all()
     result = ''
 
     # r = fetch_stock.delay()
@@ -43,6 +41,6 @@ def refresh():
 
     for alert in alerts:
         result = result + \
-            f'<tr><td>{ alert["SKU"] }</td><td>{ alert["product"] }</td><td><a target=_blank href="{ alert["atc_url"] }" class="link-success">LINK</a></td><td><a target=_blank href="{ alert["product_url"] }" class="link-success">LINK</a></td><td>{ alert["created"] }</td></tr>'
+            f'<tr><td>{ alert.sku }</td><td>{ alert.product }</td><td><a target=_blank href="{ alert.atc_url }" class="link-success">LINK</a></td><td><a target=_blank href="{ alert.product_url }" class="link-success">LINK</a></td><td>{ alert.created }</td></tr>'
 
     return result
