@@ -2,7 +2,7 @@ from flask import Blueprint, request
 import os
 from .tasks import fetch_stock_info
 from .models import Alert
-from flaskr import db
+from flaskr import app, db
 
 
 bp = Blueprint("all", __name__)
@@ -43,4 +43,7 @@ def refresh():
         result = result + \
             f'<tr><td>{ alert.sku }</td><td>{ alert.product }</td><td><a target=_blank href="{ alert.atc_url }" class="link-success">LINK</a></td><td><a target=_blank href="{ alert.product_url }" class="link-success">LINK</a></td><td>{ alert.created }</td></tr>'
 
-    return result
+
+@app.shell_context_processor
+def make_shell_context():
+    return {'db':db, 'Alert':Alert}
